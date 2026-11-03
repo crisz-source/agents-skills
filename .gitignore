@@ -1,0 +1,12 @@
+# Backups e saídas locais (nunca versionar)
+*.bak
+*.bak-*
+*.bak-*.*
+**/*.bak-*
+reports/
+*.txt
+!**/references/*.txt
+.env
+.env.*
+*.pem
+*.key
