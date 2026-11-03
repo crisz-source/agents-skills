@@ -34,6 +34,8 @@ for ag in sorted((ROOT / "agents").glob("*.md")):
     donos.setdefault(sk, []).append(ag.stem)
     if "report_standard.md" not in s:
         erros.append(f"agents/{ag.name}: seção Entrega não cita report_standard.md")
+    if not (ROOT / "permissoes" / f"{ag.stem}.json").exists():
+        erros.append(f"agents/{ag.name}: sem permissoes/{ag.stem}.json (rode python3 permissoes/gerar.py)")
 
 padrao = (ROOT / "schemas" / "report_standard.md").read_text(encoding="utf-8")
 for nome, p in skills.items():
@@ -66,7 +68,7 @@ for f in ROOT.rglob("*"):
         if b"\r" in f.read_bytes():
             erros.append(f"{f.relative_to(ROOT)}: CRLF (use LF)")
 
-for j in (ROOT / "permissoes.json", ROOT / ".claude-plugin" / "plugin.json", ROOT / "schemas" / "relatorio.schema.json"):
+for j in [ROOT / "permissoes.json", ROOT / ".claude-plugin" / "plugin.json", ROOT / "schemas" / "relatorio.schema.json"] + sorted((ROOT / "permissoes").glob("*.json")):
     try:
         json.loads(j.read_text(encoding="utf-8"))
     except Exception as e:  # noqa: BLE001

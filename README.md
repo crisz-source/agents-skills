@@ -43,7 +43,8 @@ meus-agentes/
 ├── schemas/                     # padrão de relatório (report_standard.md) e JSON Schema
 ├── tests/                       # suíte de testes (mocks de az/kubectl), roda local e no GitHub Actions
 ├── .github/workflows/           # CI: roda tests/run.sh a cada push
-├── permissoes.json              # allow/deny aplicados pelo Colmeia a cada agente
+├── permissoes/                  # permissões POR AGENTE (geradas) + fonte.json + gerar.py
+├── permissoes.json              # união das permissões (compatibilidade; gerado)
 ├── CLAUDE.md                    # regras para a conversa principal delegar (referência; plugin não carrega)
 ├── .gitattributes               # LF nos scripts (CRLF quebra o sh)
 └── .gitignore                   # backups, reports/, segredos
@@ -53,11 +54,11 @@ meus-agentes/
 
 ## Uso
 
-No Colmeia: escolha esta pasta em **Meus agentes**.
+No Colmeia: escolha esta pasta em **Meus agentes**. O Colmeia deve aplicar a cada agente o **arquivo de permissões dele**, `permissoes/<nome-do-agente>.json` (ver "Permissões por agente"). Enquanto não fizer isso, use o `permissoes.json` da raiz, que é a união.
 
-Fora do Colmeia (**sempre com as permissões**, senão nada bloqueia comandos destrutivos):
+Fora do Colmeia (**sempre com o arquivo do agente**, senão nada bloqueia comandos destrutivos):
 ```
-claude --plugin-dir C:\meus-agentes --settings C:\meus-agentes\permissoes.json --agent meus-agentes:k8s-auditor
+claude --plugin-dir C:\meus-agentes --settings C:\meus-agentes\permissoes\k8s-auditor.json --agent meus-agentes:k8s-auditor
 ```
 
 Exemplos de pedido:
@@ -107,12 +108,37 @@ O GitHub Actions roda a mesma suíte a cada push e pull request (`.github/workfl
 
 ---
 
+## Permissões por agente
+
+Cada agente tem o seu arquivo em `permissoes/<agente>.json`, com o **mínimo** de que precisa:
+
+| Agente | Pode | Não pode (além do bloqueio comum de escrita e segredos) |
+|---|---|---|
+| `finops-azure` | `az` de leitura, consultas de Log Analytics e Cost Management | `kubectl`, `docker`, `journalctl`, `systemctl` |
+| `finops-maturidade` | `grep`/`rg`, `az account show/list` (o resto da Azure só pelo script dele) | `kubectl`, `docker`, `journalctl`, `systemctl` |
+| `azure-architect` | `az` de leitura, Resource Graph | `kubectl`, `docker`, `journalctl`, `systemctl` |
+| `cloud-security-analyst` | `az` de leitura, `grep`/`rg` | `kubectl`, `docker`, `journalctl`, `systemctl` |
+| `k8s-auditor` | `kubectl` de leitura | `az`, `docker`, `journalctl`, `systemctl` |
+| `log-hunter` | logs: `kubectl logs/describe pod/events`, `docker logs`, `journalctl`, Log Analytics | escrita, `exec`, `docker inspect` sem `--format` |
+
+Em todos os arquivos, o agente **só roda os scripts da própria skill** e **não lê nem executa nada da pasta das outras skills** (`skills/<outra>/`). Isso transforma o isolamento entre agentes, antes só uma instrução, em regra.
+
+**Como alterar:** edite **`permissoes/fonte.json`** (base comum, grupos e o que cada agente usa) e rode:
+```
+python3 permissoes/gerar.py
+```
+Ele regenera os 6 arquivos e o `permissoes.json` da raiz. **Não edite os `.json` gerados à mão**: o teste `bash tests/run.sh` (e o CI) falha se eles estiverem diferentes do que o `fonte.json` produz.
+
+**Caminho do plugin:** as regras usam `raiz_plugin` do `fonte.json` (padrão `C:/meus-agentes`). Se usar o plugin em outro lugar (por exemplo, no Linux em `/home/<usuario>/agents-skills`), troque `raiz_plugin` e rode o gerador.
+
+---
+
 ## Segurança
 
 Três camadas, da mais fraca para a mais forte:
 1. **Instruções do agente e da skill:** "somente leitura", mascaramento, escopo.
 2. **`allowed-tools` das skills:** só pré-aprovam verbos de leitura (`list`, `show`, `get`, `describe`, `logs`, `query`).
-3. **`permissoes.json` (`deny` vence `allow`):** bloqueia escrita (`delete`, `create`, `update`, `set`, `add`, `remove`, `enable`, `disable`, `invoke`...), comandos que **devolvem segredos** (`keys list`, `list-keys`, `appsettings list`, `show-connection-string`, `secret show`, `generate-sas`...), `az rest`, `kubectl exec/debug/run`, leitura de Secrets com `-o`/`--output`, `docker inspect` sem `--format`, e arquivos sensíveis (`.env`, `*.pem`, `*.key`, `~/.kube`, `~/.azure`, `~/.ssh`). Os `deny` do kubectl valem também com `--context`.
+3. **Permissões por agente (`permissoes/<agente>.json`; `deny` vence `allow`):** além do que está abaixo, cada agente fica restrito às próprias ferramentas e à própria skill. bloqueia escrita (`delete`, `create`, `update`, `set`, `add`, `remove`, `enable`, `disable`, `invoke`...), comandos que **devolvem segredos** (`keys list`, `list-keys`, `appsettings list`, `show-connection-string`, `secret show`, `generate-sas`...), `az rest`, `kubectl exec/debug/run`, leitura de Secrets com `-o`/`--output`, `docker inspect` sem `--format`, e arquivos sensíveis (`.env`, `*.pem`, `*.key`, `~/.kube`, `~/.azure`, `~/.ssh`). Os `deny` do kubectl valem também com `--context`.
 
 > ⚠️ **Limites conhecidos**
 > - As regras validam o **comando digitado**, não o conteúdo dos scripts. Todo script em `skills/*/scripts/` deve conter só leitura — revise antes de aceitar mudanças.

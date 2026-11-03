@@ -37,8 +37,9 @@ else skip "shellcheck não instalado"; fi
 section "2. Coerência do repositório"
 if "$PY" "$TESTS/check_repo.py"; then ok "agentes, skills, referências, frontmatter, LF"; else fail "check_repo.py"; fi
 
-section "3. Permissões (permissoes.json)"
-if "$PY" "$TESTS/check_permissions.py"; then ok "allow/deny se comportam como esperado"; else fail "check_permissions.py"; fi
+section "3. Permissões (uma por agente + união)"
+if "$PY" "$ROOT/permissoes/gerar.py" --check; then ok "arquivos gerados batem com permissoes/fonte.json"; else fail "rode: python3 permissoes/gerar.py"; fi
+if "$PY" "$TESTS/check_permissions.py"; then ok "cada agente: permitido, negado, fora do escopo e isolamento entre skills"; else fail "check_permissions.py"; fi
 
 section "4. Queries JMESPath"
 "$PY" "$TESTS/check_jmespath.py"; rc=$?

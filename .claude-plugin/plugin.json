@@ -1,5 +1,5 @@
 {
   "name": "meus-agentes",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Agentes e skills de auditoria somente leitura: FinOps (custo e maturidade), arquitetura e segurança Azure, Kubernetes e logs."
 }

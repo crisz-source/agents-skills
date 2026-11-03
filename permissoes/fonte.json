@@ -1,0 +1,285 @@
+{
+  "_leia-me": "Fonte única das permissões. Edite AQUI e rode: python3 permissoes/gerar.py  (gera permissoes/<agente>.json e o permissoes.json da raiz). Não edite os arquivos gerados à mão.",
+  "raiz_plugin": "C:/meus-agentes",
+  "comum": {
+    "allow": [
+      "Edit(reports/**)",
+      "Bash(mkdir -p reports)",
+      "Bash(mkdir -p reports/*)",
+      "Bash(mkdir reports)",
+      "Bash(echo *)",
+      "Bash(echo)"
+    ],
+    "deny": [
+      "Bash(az * delete*)",
+      "Bash(az * create*)",
+      "Bash(az * update*)",
+      "Bash(az * set*)",
+      "Bash(az * add*)",
+      "Bash(az * remove*)",
+      "Bash(az * assign*)",
+      "Bash(az * import*)",
+      "Bash(az * reset*)",
+      "Bash(az * rotate*)",
+      "Bash(az * renew*)",
+      "Bash(az * regenerate*)",
+      "Bash(az * enable*)",
+      "Bash(az * disable*)",
+      "Bash(az * deallocate*)",
+      "Bash(az * stop*)",
+      "Bash(az * start*)",
+      "Bash(az * restart*)",
+      "Bash(az * resize*)",
+      "Bash(az * scale*)",
+      "Bash(az * purge*)",
+      "Bash(az * recover*)",
+      "Bash(az * invoke*)",
+      "Bash(az * run-command*)",
+      "Bash(az * upgrade*)",
+      "Bash(az * download*)",
+      "Bash(az rest *)",
+      "Bash(az * keys list*)",
+      "Bash(az * keys show*)",
+      "Bash(az * list-keys*)",
+      "Bash(az * secret show*)",
+      "Bash(az * secret list*--show-values*)",
+      "Bash(az * show-connection-string*)",
+      "Bash(az * connection-string*)",
+      "Bash(az * credential show*)",
+      "Bash(az * credentials show*)",
+      "Bash(az * appsettings list*)",
+      "Bash(az * list-publishing-profiles*)",
+      "Bash(az * list-publishing-credentials*)",
+      "Bash(az * admin-key*)",
+      "Bash(az * query-key*)",
+      "Bash(az * api-key*)",
+      "Bash(az * get-credentials*--admin*)",
+      "Bash(az * generate-sas*)",
+      "Bash(az * sas*)",
+      "Bash(kubectl apply *)",
+      "Bash(kubectl create *)",
+      "Bash(kubectl delete *)",
+      "Bash(kubectl edit *)",
+      "Bash(kubectl patch *)",
+      "Bash(kubectl replace *)",
+      "Bash(kubectl scale *)",
+      "Bash(kubectl autoscale *)",
+      "Bash(kubectl set *)",
+      "Bash(kubectl expose *)",
+      "Bash(kubectl run *)",
+      "Bash(kubectl debug *)",
+      "Bash(kubectl attach *)",
+      "Bash(kubectl proxy*)",
+      "Bash(kubectl rollout *)",
+      "Bash(kubectl drain *)",
+      "Bash(kubectl cordon *)",
+      "Bash(kubectl uncordon *)",
+      "Bash(kubectl taint *)",
+      "Bash(kubectl label *)",
+      "Bash(kubectl annotate *)",
+      "Bash(kubectl exec *)",
+      "Bash(kubectl cp *)",
+      "Bash(kubectl port-forward *)",
+      "Bash(kubectl certificate *)",
+      "Bash(kubectl config use-context *)",
+      "Bash(kubectl config set*)",
+      "Bash(kubectl config delete*)",
+      "Bash(kubectl * apply *)",
+      "Bash(kubectl * create *)",
+      "Bash(kubectl * delete *)",
+      "Bash(kubectl * edit *)",
+      "Bash(kubectl * patch *)",
+      "Bash(kubectl * replace *)",
+      "Bash(kubectl * scale *)",
+      "Bash(kubectl * rollout *)",
+      "Bash(kubectl * drain *)",
+      "Bash(kubectl * cordon *)",
+      "Bash(kubectl * taint *)",
+      "Bash(kubectl * label *)",
+      "Bash(kubectl * annotate *)",
+      "Bash(kubectl * exec *)",
+      "Bash(kubectl * debug *)",
+      "Bash(kubectl * run *)",
+      "Bash(kubectl * set *)",
+      "Bash(kubectl * cp *)",
+      "Bash(kubectl * port-forward *)",
+      "Bash(kubectl get secret* -o*)",
+      "Bash(kubectl get secret* --output*)",
+      "Bash(kubectl * get secret* -o*)",
+      "Bash(kubectl * get secret* --output*)",
+      "Bash(kubectl * --raw*)",
+      "Bash(kubectl get --raw*)",
+      "Bash(docker exec *)",
+      "Bash(docker rm *)",
+      "Bash(docker rmi *)",
+      "Bash(docker stop *)",
+      "Bash(docker kill *)",
+      "Bash(docker restart *)",
+      "Bash(docker run *)",
+      "Bash(docker cp *)",
+      "Bash(docker compose down*)",
+      "Bash(docker system prune*)",
+      "Bash(docker inspect)",
+      "Bash(systemctl start *)",
+      "Bash(systemctl stop *)",
+      "Bash(systemctl restart *)",
+      "Bash(systemctl reload *)",
+      "Bash(systemctl enable *)",
+      "Bash(systemctl disable *)",
+      "Bash(systemctl kill *)",
+      "Bash(journalctl --vacuum*)",
+      "Bash(journalctl --rotate*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*.pfx)",
+      "Read(**/*.p12)",
+      "Read(~/.kube/config)",
+      "Read(~/.kube/**)",
+      "Read(~/.azure/**)",
+      "Read(~/.ssh/**)",
+      "Bash(rm *)",
+      "Bash(git commit*)",
+      "Bash(git push*)"
+    ]
+  },
+  "grupos": {
+    "az_leitura": [
+      "Bash(az account show*)",
+      "Bash(az account list*)",
+      "Bash(az * list*)",
+      "Bash(az * show*)"
+    ],
+    "az_consultas": [
+      "Bash(az monitor log-analytics query *)",
+      "Bash(az costmanagement query *)"
+    ],
+    "az_graph": [
+      "Bash(az graph query *)"
+    ],
+    "az_logs": [
+      "Bash(az account show*)",
+      "Bash(az monitor log-analytics workspace list*)",
+      "Bash(az monitor log-analytics query *)"
+    ],
+    "kubectl_leitura": [
+      "Bash(kubectl get *)",
+      "Bash(kubectl describe *)",
+      "Bash(kubectl top *)",
+      "Bash(kubectl logs *)",
+      "Bash(kubectl events *)",
+      "Bash(kubectl auth can-i *)",
+      "Bash(kubectl config current-context*)",
+      "Bash(kubectl config get-contexts*)",
+      "Bash(kubectl version*)",
+      "Bash(kubectl api-resources*)",
+      "Bash(kubectl --context * get *)",
+      "Bash(kubectl --context * describe *)",
+      "Bash(kubectl --context * top *)",
+      "Bash(kubectl --context * logs *)",
+      "Bash(kubectl --context * events *)"
+    ],
+    "kubectl_logs": [
+      "Bash(kubectl config current-context*)",
+      "Bash(kubectl logs *)",
+      "Bash(kubectl --context * logs *)",
+      "Bash(kubectl describe pod*)",
+      "Bash(kubectl --context * describe pod*)",
+      "Bash(kubectl get events*)",
+      "Bash(kubectl --context * get events*)",
+      "Bash(kubectl events *)"
+    ],
+    "texto": [
+      "Bash(grep *)",
+      "Bash(rg *)"
+    ],
+    "host_logs": [
+      "Bash(journalctl *)",
+      "Bash(docker logs *)",
+      "Bash(docker ps*)",
+      "Bash(docker inspect --format *)",
+      "Bash(systemctl status *)"
+    ],
+    "nega_az": [
+      "Bash(az *)"
+    ],
+    "nega_kubectl": [
+      "Bash(kubectl *)"
+    ],
+    "nega_host": [
+      "Bash(docker *)",
+      "Bash(journalctl *)",
+      "Bash(systemctl *)"
+    ]
+  },
+  "agentes": {
+    "finops-azure": {
+      "skill": "azure-cost-finops",
+      "allow": [
+        "az_leitura",
+        "az_consultas"
+      ],
+      "deny": [
+        "nega_kubectl",
+        "nega_host"
+      ]
+    },
+    "finops-maturidade": {
+      "skill": "finops-framework",
+      "allow": [
+        "texto"
+      ],
+      "deny": [
+        "nega_kubectl",
+        "nega_host"
+      ],
+      "allow_extra": [
+        "Bash(az account show*)",
+        "Bash(az account list*)"
+      ]
+    },
+    "azure-architect": {
+      "skill": "azure-arch-audit",
+      "allow": [
+        "az_leitura",
+        "az_graph"
+      ],
+      "deny": [
+        "nega_kubectl",
+        "nega_host"
+      ]
+    },
+    "cloud-security-analyst": {
+      "skill": "cloud-security-audit",
+      "allow": [
+        "az_leitura",
+        "texto"
+      ],
+      "deny": [
+        "nega_kubectl",
+        "nega_host"
+      ]
+    },
+    "k8s-auditor": {
+      "skill": "k8s-cluster-audit",
+      "allow": [
+        "kubectl_leitura"
+      ],
+      "deny": [
+        "nega_az",
+        "nega_host"
+      ]
+    },
+    "log-hunter": {
+      "skill": "log-hunter",
+      "allow": [
+        "az_logs",
+        "kubectl_logs",
+        "texto",
+        "host_logs"
+      ],
+      "deny": []
+    }
+  }
+}

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 — 2026-11-03
+### Novo
+- **Permissões por agente** em `permissoes/<agente>.json`: cada agente só tem as ferramentas do seu escopo (ex.: `k8s-auditor` não roda `az`; agentes Azure não rodam `kubectl`), só executa os scripts da própria skill e não lê nem executa arquivos das skills dos outros.
+- **Fonte única** `permissoes/fonte.json` + gerador `permissoes/gerar.py`; o `permissoes.json` da raiz passa a ser gerado (união, para compatibilidade).
+- Testes: o CI falha se os arquivos gerados estiverem desatualizados; simulação de 376 verificações (união + 6 agentes, incluindo isolamento entre skills).
+
+### Corrigido
+- Removida a regra `Write(reports/**)`: regras de caminho com `Write` não são consultadas pelo Claude Code (o `Edit(reports/**)` já cobre a escrita).
+
 ## 0.3.0 — 2026-11-03
 ### Novo
 - **Padrão comum de relatório** (`schemas/report_standard.md`, copiado em cada skill): HTML + **JSON** com o mesmo nome-base, vocabulário único de severidade/confiança, `fingerprint` por achado e seção **"Desde a última auditoria"**.
