@@ -24,5 +24,11 @@ Boa prática a recomendar: grupos do Entra ID em vez de usuários individuais, m
 
 Se o Graph negar acesso (`Authorization_RequestDenied`), todas essas linhas ficam **Inconclusivo** e vão para Limitações, com a permissão necessária (ex.: leitura de relatórios de autenticação e de políticas de Conditional Access).
 
+## MFA obrigatório da Azure e automação
+- Desde a fase 2 (a partir de 01/10/2025, aplicada gradualmente por tenant), **usuários** precisam de MFA para operações de gerenciamento via Azure Resource Manager — portal, CLI, PowerShell, IaC. Identidades de workload (managed identity, service principal) não são afetadas.
+- **Achado Alto:** pipeline, script agendado ou ferramenta que roda com **conta de usuário** (login com usuário/senha) no lugar de identidade de workload. Vai quebrar quando a fase 2 for aplicada ao tenant (o adiamento tem prazo) e é credencial de pessoa usada por máquina. Recomendação: managed identity ou service principal com identidade federada (OIDC).
+- Azure DevOps: service connections de workload identity federation com o emissor do Azure DevOps (`vstoken.dev.azure.com`) estão descontinuadas; aposentadoria em 01/07/2027. Converter para o emissor do Entra ID. Baixo (prazo longo), mas registre.
+- Evidência típica: em IaC/pipelines, `az login -u`, `Connect-AzAccount -Credential`, variáveis `AZURE_USERNAME`/`AZURE_PASSWORD`. O coletor de IaC mostra `password`; procure também esses padrões com `rg`.
+
 ## Dados pessoais
 Relate contagens. Liste UPNs apenas quando forem necessários para a correção, e só no corpo do achado.

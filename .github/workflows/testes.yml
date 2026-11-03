@@ -1,0 +1,27 @@
+name: testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dependências (jmespath para validar as queries do az)
+        run: pip install jmespath
+
+      - name: Suíte (sintaxe, shellcheck, permissões, JMESPath, coletores com mocks, mascaramento)
+        run: bash tests/run.sh

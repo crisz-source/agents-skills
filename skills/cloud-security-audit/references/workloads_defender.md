@@ -24,5 +24,9 @@ O custo de ligar planos do Defender é assunto do finops-azure (registre em "For
 | Sem network policy (`networkPolicy` vazio) | Médio (achado de rede; o detalhe é do k8s-auditor) |
 | Versão do Kubernetes fora do suporte do AKS | Alto — confirme o calendário atual com `az aks get-versions -l <região>` |
 | Defender for Containers desligado no cluster | Médio |
+| Node pool com **Azure Linux 2.0** (`osSku` AzureLinux em Kubernetes < 1.32) | **Crítico**: sem patches desde 30/11/2025 e imagens removidas em 31/03/2026 — escalar ou recriar nodes **falha**. Migrar para `AzureLinux3` (in-place a partir da 1.28) ou subir a versão |
+| Node pool **Ubuntu 20.04** | Alto: suporte no AKS termina em 17/03/2027 |
+| Rede **kubenet** (`networkPlugin = kubenet`) | Médio: aposentadoria em 31/03/2028; planejar migração para Azure CNI Overlay |
+| SKU Basic em IP público ou Load Balancer usado pelo cluster | Alto: aposentado em 30/09/2025, sem suporte nem SLA |
 
 O que está **dentro** do cluster (pods privilegiados, RBAC do Kubernetes, Secrets) é do k8s-auditor: registre em "Fora do Escopo".

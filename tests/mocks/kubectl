@@ -1,0 +1,37 @@
+#!/bin/sh
+# Mock do kubectl para os testes do k8s-cluster-audit. Registra as chamadas em $MOCK_LOG.
+echo "$*" >> "${MOCK_LOG:-/dev/null}"
+case "$*" in
+  *"version"*) printf 'Client Version: v1.36.2\nServer Version: v1.34.5\n' ;;
+  *"cluster-info"*) echo "Kubernetes control plane is running" ;;
+  *"get nodes -o wide"*) echo "NAME STATUS" ;;
+  *"get nodes --no-headers"*) printf 'node1   True    False   False   False\nnode2   False   True    False   False\n' ;;
+  *"field-selector status.phase"*) printf 'NAMESPACE NAME READY STATUS\napp job-x 0/1 Pending\n' ;;
+  *"RESTARTS:"*) cat <<'EOF'
+app       api-1       0,12       <none>,CrashLoopBackOff   <none>,OOMKilled   <none>   <none>             <none>
+app       sidecar-1   0          <none>                    <none>             9        <none>             Error
+app       init-bad    0          <none>                    <none>             3        CrashLoopBackOff   <none>
+app       ok-1        1          <none>                    <none>             <none>   <none>             <none>
+EOF
+  ;;
+  *"top nodes"*) echo "NAME CPU MEM" ;;
+  *"top pods"*) echo "NS POD CPU MEM" ;;
+  *"get pvc"*) printf 'app data-0 Bound pv1 10Gi RWO\napp data-1 Pending\n' ;;
+  *"get pv "*|*"get pv --no"*) printf 'pv1 10Gi RWO Retain Bound app/data-0\npv9 5Gi RWO Retain Released app/old\n' ;;
+  *"endpointslices"*) printf 'app api true,true\napp web <none>\napp web true\napp batch false\n' ;;
+  *"get ns"*) printf 'kube-system <none>\napp restricted\nlegado <none>\n' ;;
+  *"IMAGES:"*) cat <<'EOF'
+app api-1 acr.io/supp/api:1.2.3 <none>
+app web-1 acr.io/supp/web:latest <none>
+app ok-1 acr.io/x@sha256:abc,registry:5000/foo/bar:2.0 <none>
+app-routing-system nginx-abc mcr.microsoft.com/oss/kubernetes/ingress/nginx-ingress-controller:v1.11.5 <none>
+kube-system nmi-xyz mcr.microsoft.com/oss/azure/aad-pod-identity/nmi:v1.8.17 <none>
+EOF
+  ;;
+  *"get ingressclass"*) printf 'webapprouting.kubernetes.azure.com webapprouting.kubernetes.azure.com/nginx\nnginx k8s.io/ingress-nginx\n' ;;
+  *"get ingress "*|*"get ingress --all"*) printf 'a\nb\n' ;;
+  *"crd gateways"*|*"crd azureidentities"*) exit 1 ;;
+  *"get azureidentities"*) echo x ;;
+  *"get sa"*) printf '<none>\nabc-123\n' ;;
+  *"events"*) echo "LAST SEEN TYPE REASON" ;;
+esac

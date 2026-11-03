@@ -1,0 +1,31 @@
+#!/bin/sh
+# Mock da Azure CLI para os testes. Registra cada chamada em $MOCK_LOG e devolve
+# respostas plausíveis por padrão de argumentos. Nunca acessa a rede.
+echo "$*" >> "${MOCK_LOG:-/dev/null}"
+case "$*" in
+  "account show -o none") exit 0 ;;
+  *"account show"*) printf 'Subscription  Id  Tenant\nsub-teste  0000  1111\n' ;;
+
+  # --- respostas usadas pelas asserções ---
+  *"aks list"*"[].[resourceGroup, name]"*) printf 'rg-aks\taks-teste\r\n' ;;
+  *"nodepool list"*) printf 'system\tSystem\tStandard_D4s_v5\t2\tFalse\tNone\tNone\tRegular\tAzureLinux\t1.31.5\n' ;;
+  *"vm list"*"VM running"*) printf 'vm-old\trg\tStandard_D4s_v3\tLinux\nvm-new\trg\tStandard_D4s_v5\tLinux\n' ;;
+  *"resource list"*"keys(tags"*) printf 'rg-prod\tMicrosoft.Compute/disks\tEnvironment,Owner,CostCenter,Application\r\nrg-hml\tMicrosoft.Web/sites\t\r\nMC_rg_aks_brazilsouth\tMicrosoft.Compute/virtualMachineScaleSets\t\r\n' ;;
+  *"resource list"*"[].{t:tags"*) printf '[{"t":{"Environment":"prd","Owner":"x","CostCenter":"c","Application":"a"},"g":"a"},{"t":null,"g":"b"}]' ;;
+  *"keyvault list"*) printf 'kv-teste\r\n' ;;
+  *"keyvault show"*) printf 'True\nTrue\nTrue\nDisabled\nDeny\n' ;;
+  *"sql server list"*"[].[resourceGroup, name]"*) printf 'rg-db\tsql-teste\n' ;;
+  *"firewall-rule list"*) printf 'AllowAll\t0.0.0.0\t255.255.255.255\n' ;;
+  *"webapp list"*"[].[resourceGroup"*) printf 'rg-app\tapp-teste\n' ;;
+  *"webapp config show"*) printf '1.2\nDisabled\nFalse\n' ;;
+  *"storage account list"*"[].[resourceGroup, name]"*|*"storage account list"*"kind=="*) printf 'rg\tsateste\n' ;;
+  *"management-policy show"*) exit 3 ;;
+  *"workspace list"*"customerId]"*) printf 'rg-log\tlog-teste\t1111-2222\n' ;;
+  *"assessment list"*) printf 'MFA should be enabled\nMFA should be enabled\n' ;;
+
+  # --- falhas simuladas (devem virar Inconclusivo / Não avaliado) ---
+  *"reservations"*|*"billing-benefits"*|*"costmanagement"*) echo "ERROR: extension not installed" >&2; exit 2 ;;
+  *"rest "*) echo "Forbidden: Authorization_RequestDenied" >&2; exit 1 ;;
+
+  *) echo "(mock) ok" ;;
+esac

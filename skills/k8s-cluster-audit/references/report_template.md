@@ -1,5 +1,7 @@
 # Modelo de Relatório de Auditoria de Cluster Kubernetes
 
+> **Obrigatório:** cabeçalho, vocabulário de severidade/confiança, arquivo JSON e a seção "Desde a última auditoria" seguem `report_standard.md`. Este template define só as seções específicas deste agente.
+
 ## Resumo Executivo
 - **Data da Auditoria:** {{DATA}}
 - **Contexto / Cluster:** {{CLUSTER_CONTEXT}}

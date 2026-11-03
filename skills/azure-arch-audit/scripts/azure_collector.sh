@@ -1,23 +1,22 @@
 #!/bin/sh
 # Azure Architecture Audit Collector (SOMENTE LEITURA: list / show).
 #
-# Uso: sh azure_collector.sh <subscription-id> [tags,obrigatórias]
+# Uso: sh azure_collector.sh <subscription-id[,subscription-id...]> [tags,obrigatórias]
 #   Tags padrão: Environment,Owner,CostCenter,Application (comparação sem diferenciar maiúsculas).
 # Não calcula custo (isso é do finops-azure).
 
-SUB="$1"
+SUBS="$1"
 TAGS="${2:-Environment,Owner,CostCenter,Application}"
 LIMIT="${ARCH_LIMIT:-60}"
 set -f
 
-if [ -z "$SUB" ]; then
-  echo "Uso: sh $0 <subscription-id> [tags,obrigatórias]" >&2
+if [ -z "$SUBS" ]; then
+  echo "Uso: sh $0 <subscription-id[,subscription-id...]> [tags,obrigatórias]" >&2
   exit 2
 fi
 command -v az >/dev/null 2>&1 || { echo "ERRO: Azure CLI (az) não encontrada." >&2; exit 1; }
 az account show -o none 2>/dev/null || { echo "ERRO: Azure CLI não autenticada. Rode 'az login'." >&2; exit 1; }
 
-S="--subscription $SUB"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
@@ -33,6 +32,9 @@ run() {
   fi
 }
 
+coletar() {
+  SUB="$1"
+  S="--subscription $SUB"
 echo "=== [1/9] Conta e Subscription ==="
 az account show $S --query "{Subscription:name, Id:id, Tenant:tenantId}" -o table
 
@@ -61,6 +63,10 @@ echo "=== [5/9] IPs públicos sem associação ==="
 run "Public IPs com ipConfiguration vazio" \
   az network public-ip list $S --query "[?ipConfiguration==null && natGateway==null].{Nome:name, RG:resourceGroup, IP:ipAddress, Alocacao:publicIPAllocationMethod, DNS:dnsSettings.fqdn, Sku:sku.name}" -o table
 echo "(IP Static pode estar liberado em firewall de parceiro ou em DNS externo: removido, ele se perde. Sempre 'Requer Validação'.)"
+run "SKU Basic aposentado em 30/09/2025 (todos os IPs públicos e Load Balancers Basic, associados ou não)" \
+  az network public-ip list $S --query "[?sku.name=='Basic'].{Tipo:'Public IP', Nome:name, RG:resourceGroup, Associado:ipConfiguration.id != null}" -o table
+run "Load Balancers Basic" \
+  az network lb list $S --query "[?sku.name=='Basic'].{Nome:name, RG:resourceGroup, Frontends:length(frontendIPConfigurations || \`[]\`)}" -o table
 
 echo ""
 echo "=== [6/9] NICs e NSGs sem associação ==="
@@ -110,4 +116,13 @@ run "Snapshots (podem ser o backup de um disco 'órfão')" \
   az snapshot list $S --query "[].{Nome:name, RG:resourceGroup, DiscoOrigem:creationData.sourceResourceId, Criado:timeCreated}" -o table
 
 echo ""
+}
+
+for SUB in $(echo "$SUBS" | tr ',' ' '); do
+  echo ""
+  echo "################################################################"
+  echo "### Subscription: $SUB"
+  echo "################################################################"
+  coletar "$SUB"
+done
 echo "=== Coleta Concluída ==="

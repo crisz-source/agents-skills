@@ -83,12 +83,12 @@ search "Documentos sobre custo/FinOps" '(finops|showback|chargeback|unit economi
 
 echo ""
 echo "=== [7/7] Relatórios de outros agentes (finops-azure e azure-architect) ==="
-reports=$(find "$ROOT" -type d \( -name .git -o -name node_modules \) -prune -o -type f -path '*reports/*' \( -name 'finops-*.html' -o -name 'arch-*.html' \) ! -name 'finops-maturidade-*' -print 2>/dev/null | sort | tail -n 10)
+reports=$(find "$ROOT" -type d \( -name .git -o -name node_modules \) -prune -o -type f -path '*reports/*' \( -name 'finops-*.json' -o -name 'arch-*.json' -o -name 'finops-*.html' -o -name 'arch-*.html' \) ! -name 'finops-maturidade-*' -print 2>/dev/null | sort | tail -n 10)
 if [ -n "$reports" ]; then
   echo "$reports"
-  echo "(finops-*: evidências de Usage/Rate Optimization, Architecting e Licensing. arch-*: cobertura de tags, locks e policies.)"
+  echo "(Prefira o .json. finops-*: Usage/Rate Optimization, Architecting e Licensing. arch-*: cobertura de tags, locks e policies.)"
 else
-  echo "(nenhum relatório reports/finops-*.html ou reports/arch-*.html encontrado)"
+  echo "(nenhum relatório finops-* ou arch-* encontrado em reports/)"
 fi
 
 echo ""

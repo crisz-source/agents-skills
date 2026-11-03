@@ -25,9 +25,9 @@ Esta habilidade executa uma análise profunda e não destrutiva (somente leitura
 ### Etapa 2: Coleta Determinística de Dados
 Execute o script auxiliar de coleta para extrair o inventário e estado operacional dos recursos:
 ```bash
-sh ${CLAUDE_SKILL_DIR}/scripts/azure_collector.sh <subscription-id> [tags,obrigatórias]
+sh ${CLAUDE_SKILL_DIR}/scripts/azure_collector.sh <subscription-id[,subscription-id...]> [tags,obrigatórias]
 ```
-Padrão de tags: `Environment,Owner,CostCenter,Application`. O script cobre hierarquia, locks, Azure Policy, discos, IPs, NICs, NSGs, App Service Plans, cobertura de tags por resource group e dependências (Private Endpoints, snapshots).
+Padrão de tags: `Environment,Owner,CostCenter,Application`. O script aceita várias subscriptions (separadas por vírgula) e cobre hierarquia, locks, Azure Policy, discos, IPs, SKUs Basic aposentados, NICs, NSGs, App Service Plans, cobertura de tags por resource group e dependências (Private Endpoints, snapshots).
 ---
 ### Etapa 3: Análise Modular por Domínio Técnico
 Consulte os guias especializados de referência contidos na skill para fundamentar o diagnóstico:
@@ -42,3 +42,10 @@ Para cada recurso não utilizado ou desalinhado, informe:
 - **Status de Utilização:** Ativo, Ocioso ou Órfão, com a evidência (estado, há quanto tempo).
 - **Nível de Risco de Remoção:** Seguro | Requer Validação (padrão na dúvida) | Crítico (dependência encontrada ou grupo gerenciado), conforme `orphans_removal.md`.
 - **Ação Sugerida & Tags Recomendadas:** Script em CLI/Bicep ou recomendação de tag (`Environment`, `CostCenter`, `Owner`).
+
+## Padrão de saída (comum a todos os agentes)
+Siga `${CLAUDE_SKILL_DIR}/references/report_standard.md`:
+- **Dois arquivos** com o mesmo nome-base em `reports/`: `.html` (pessoas) e `.json` (outros agentes, Colmeia, comparação).
+- **Vocabulário único:** severidade Crítico · Alto · Médio · Baixo · Info; confiança Confirmado · Potencial · Inconclusivo.
+- **`fingerprint` estável** por achado (`<categoria>|<recurso>`), sem valores que mudam a cada execução.
+- **"Desde a última auditoria":** compare com o JSON anterior do mesmo `<tipo>-<escopo>` (novos, resolvidos, persistentes, pioraram/melhoraram).

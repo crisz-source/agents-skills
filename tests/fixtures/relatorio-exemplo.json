@@ -1,0 +1,34 @@
+{
+  "schema": "meus-agentes/relatorio@1",
+  "agente": "finops-azure",
+  "skill": "azure-cost-finops",
+  "tipo": "finops",
+  "escopo": "supp-hml",
+  "data": "2026-11-03",
+  "contexto": { "subscriptions": ["00000000-0000-0000-0000-000000000000"], "tenant": null, "cluster": null, "alvo": null },
+  "resumo": { "critico": 0, "alto": 1, "medio": 1, "baixo": 0, "info": 1, "destaque": "Economia estimada: US$ 610–780/mês" },
+  "achados": [
+    {
+      "id": "E1-01", "fingerprint": "aks-nodepool-fixo|aks-supp-hml/user",
+      "titulo": "Node pool user fixo em 3 nós, sem autoscaler, ligado 24/7", "categoria": "aks-nodepool-fixo",
+      "recurso": "aks-supp-hml/user", "ambiente": "Não Produção", "severidade": "Alto", "confianca": "Confirmado",
+      "evidencia": "enableAutoScaling=false, count=3, Standard_D8s_v3", "recomendacao": "Autoscaler 1-3 + parada fora do horário",
+      "economia_mensal_usd": 590
+    },
+    {
+      "id": "C-01", "fingerprint": "geracao-vm|vm-app-hml",
+      "titulo": "VM em geração antiga (v3)", "categoria": "geracao-vm", "recurso": "vm-app-hml",
+      "ambiente": "Não Produção", "severidade": "Médio", "confianca": "Potencial",
+      "evidencia": "Standard_D4s_v3 ligada", "recomendacao": "Avaliar D4s_v5/v6", "economia_mensal_usd": 40
+    },
+    {
+      "id": "D-01", "fingerprint": "proposta-compromisso|savings-plan-compute",
+      "titulo": "Proposta de Savings Plan de compute (1 ano)", "categoria": "proposta-compromisso", "recurso": "subscription",
+      "ambiente": null, "severidade": "Info", "confianca": "Potencial",
+      "evidencia": "Recomendação do Advisor", "recomendacao": "Levar ao time de contratos", "economia_mensal_usd": null
+    }
+  ],
+  "fora_do_escopo": [ { "agente": "k8s-auditor", "item": "requests do namespace app muito acima do uso" } ],
+  "limitacoes": [ "Cost Management: extensão costmanagement ausente (Inconclusivo)" ],
+  "comparacao": { "relatorio_anterior": null, "novos": [], "resolvidos": [], "persistentes": [], "pioraram": [], "melhoraram": [] }
+}

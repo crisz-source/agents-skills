@@ -16,7 +16,7 @@ Este projeto tem 6 agentes isolados. Cada um tem a sua própria skill e não usa
 1. **Sempre delegue ao agente.** Não execute nenhuma dessas skills diretamente na conversa principal; elas existem para ser usadas dentro do agente dono.
 2. **Um pedido, um agente.** Escolha o agente pelo escopo da tabela. Se o pedido cobrir duas áreas (por exemplo, "custo e tags"), chame cada agente separadamente, com uma tarefa bem delimitada para cada.
 3. **Não misture contextos.** Ao delegar, passe só o que aquele agente precisa (escopo, subscription, contexto do cluster, janela de tempo). Não repasse o relatório de um agente como instrução para outro.
-   - **Exceção única:** o `finops-maturidade` lê os relatórios já salvos em `reports/` (`finops-*.html` e `arch-*.html`) como **evidência**. Se o usuário pedir avaliação de maturidade completa, sugira rodar antes o `finops-azure` e o `azure-architect` — e pergunte, não acione por conta própria.
+   - **Exceção única:** o `finops-maturidade` lê os relatórios já salvos em `reports/` (`finops-*.json` e `arch-*.json`) como **evidência**. Se o usuário pedir avaliação de maturidade completa, sugira rodar antes o `finops-azure` e o `azure-architect` — e pergunte, não acione por conta própria.
 4. **"Fora do escopo" é informação para o usuário.** Quando um relatório tiver itens nessa seção, mostre-os ao usuário e pergunte se ele quer acionar o agente correspondente. Não acione por conta própria.
 5. **Na dúvida sobre qual agente usar, pergunte ao usuário.**
 

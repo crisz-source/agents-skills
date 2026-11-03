@@ -1,5 +1,7 @@
 # Modelo do Relatório de Maturidade FinOps
 
+> **Obrigatório:** cabeçalho, vocabulário de severidade/confiança, arquivo JSON e a seção "Desde a última auditoria" seguem `report_standard.md`. Este template define só as seções específicas deste agente.
+
 Entrega: **HTML único e autocontido** (CSS em `<style>`, sem CDN, fontes ou scripts externos), legível em tela e impresso.
 Arquivo: `reports/finops-maturidade-<unidade>-<AAAA-MM-DD>.html`.
 Cores por nível: Não praticado (cinza escuro), Crawl (vermelho), Walk (amarelo/âmbar), Run (verde), Não avaliado (cinza claro, tracejado).

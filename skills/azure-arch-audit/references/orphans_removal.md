@@ -18,6 +18,9 @@ Right-sizing de VMs e bancos também é do finops-azure: registre em "Fora do es
 - **App Service Plan com `numberOfSites = 0`:** seguro em Não Produção; em Produção, confirme se não é reservado para um slot ou deploy futuro.
 - **Snapshots antigos:** identifique o disco de origem (`creationData.sourceResourceId`). Snapshot cujo disco de origem não existe mais pode ser o único backup: Requer Validação.
 
+## SKUs Basic aposentados (não são órfãos, mas são risco)
+IP público Basic e Load Balancer Basic foram aposentados em 30/09/2025: continuam funcionando, **sem suporte e sem SLA**. Liste todos, inclusive os associados, como achado de governança (Alto em Produção). A migração para Standard muda comportamento: Standard IP é fechado por padrão e exige NSG liberando o tráfego; Load Balancer Basic exige o script de upgrade da Microsoft. O custo da troca é com o finops-azure.
+
 ## Recursos que nunca são "órfãos" sem análise
 - Tudo em `MC_*` (gerenciado pelo AKS) e `NetworkWatcherRG`.
 - Recursos com lock `CanNotDelete` ou `ReadOnly`: o lock é uma decisão explícita de alguém.

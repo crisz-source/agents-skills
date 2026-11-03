@@ -15,7 +15,7 @@ Análise **somente leitura** da postura de segurança de uma subscription Azure,
 | Defender for Cloud, Secure Score, recomendações | Interior do cluster Kubernetes (pods, RBAC do K8s) → k8s-auditor |
 | Exposição pública: Storage, NSG, SQL, App Service, ACR, Key Vault | Custo e economia → finops-azure |
 | RBAC do Azure, Entra ID (MFA de admins, Conditional Access, segredos de apps) | Padrão de tags e hierarquia → azure-architect |
-| AKS na camada Azure (API pública, contas locais, Entra ID, network policy) | Logs de aplicação → log-hunter |
+| AKS na camada Azure (API pública, contas locais, Entra ID, network policy, SO dos nodes, kubenet) | Logs de aplicação → log-hunter |
 | Segredos e configurações inseguras em IaC e pipelines | Testes de intrusão, varredura de portas, exploração |
 
 ---
@@ -28,11 +28,11 @@ Análise **somente leitura** da postura de segurança de uma subscription Azure,
 
 ### Etapa 2: Coleta determinística
 ```bash
-sh ${CLAUDE_SKILL_DIR}/scripts/cloud_sec_collector.sh <subscription-id> [diretório-de-IaC]
+sh ${CLAUDE_SKILL_DIR}/scripts/cloud_sec_collector.sh <subscription-id[,subscription-id...]> [diretório-de-IaC]
 # Com checagens de Entra ID (exigem permissão de leitura no diretório):
-ENTRA=1 sh ${CLAUDE_SKILL_DIR}/scripts/cloud_sec_collector.sh <subscription-id> [diretório-de-IaC]
+ENTRA=1 sh ${CLAUDE_SKILL_DIR}/scripts/cloud_sec_collector.sh <subscription-id[,subscription-id...]> [diretório-de-IaC]
 ```
-O script cobre: Defender (planos, Secure Score, recomendações), Storage, NSG, Key Vault, ACR, SQL, App Service, AKS, RBAC, Entra ID (opcional) e IaC.
+O script cobre, por subscription: Defender (planos, Secure Score, recomendações), Storage, NSG, Key Vault, ACR, SQL, App Service, AKS (incluindo SO e versão dos node pools e plugin de rede) e RBAC; uma vez por tenant: Entra ID (opcional); e a varredura de IaC.
 Verificações que falharem por permissão aparecem como **Inconclusivo**: registre na seção de Limitações, nunca invente o resultado.
 
 ### Etapa 3: Aprofundamento pontual (somente leitura)
@@ -64,3 +64,10 @@ Cada achado tem obrigatoriamente:
 - **Achado vazado em repositório é Crítico mesmo se o segredo já tiver sido trocado**: a recomendação inclui rotação e limpeza do histórico do git.
 - **Dados pessoais:** em RBAC e Entra ID, prefira contagens; cite nomes de usuário só quando necessário para a correção.
 - **Severidade honesta.** Crítico é o que expõe dados ou permite acesso indevido hoje.
+
+## Padrão de saída (comum a todos os agentes)
+Siga `${CLAUDE_SKILL_DIR}/references/report_standard.md`:
+- **Dois arquivos** com o mesmo nome-base em `reports/`: `.html` (pessoas) e `.json` (outros agentes, Colmeia, comparação).
+- **Vocabulário único:** severidade Crítico · Alto · Médio · Baixo · Info; confiança Confirmado · Potencial · Inconclusivo.
+- **`fingerprint` estável** por achado (`<categoria>|<recurso>`), sem valores que mudam a cada execução.
+- **"Desde a última auditoria":** compare com o JSON anterior do mesmo `<tipo>-<escopo>` (novos, resolvidos, persistentes, pioraram/melhoraram).

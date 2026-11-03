@@ -1,7 +1,7 @@
 ---
 name: log-hunter
 description: Investigação de logs e causa raiz, somente leitura - erros, crashes, OOM, timeouts, lentidão e erros silenciosos em aplicações (Java, Python, Node.js, Go, .NET, PHP, C/C++), containers Docker, pods Kubernetes, systemd e arquivos de log. Mascara senhas, tokens e dados pessoais já na coleta. Não audita configuração de cluster nem infraestrutura Azure.
-allowed-tools: Bash(grep *) Bash(rg *) Bash(journalctl *) Bash(docker logs *) Bash(docker ps*) Bash(docker inspect --format *) Bash(kubectl logs *) Bash(kubectl --context * logs *) Bash(kubectl describe pod*) Bash(kubectl get events*) Bash(kubectl config current-context*) Bash(sh ${CLAUDE_SKILL_DIR}/scripts/*)
+allowed-tools: Bash(grep *) Bash(rg *) Bash(journalctl *) Bash(docker logs *) Bash(docker ps*) Bash(docker inspect --format *) Bash(kubectl logs *) Bash(kubectl --context * logs *) Bash(kubectl describe pod*) Bash(kubectl get events*) Bash(kubectl config current-context*) Bash(az account show*) Bash(az monitor log-analytics workspace list*) Bash(az monitor log-analytics query *) Bash(sh ${CLAUDE_SKILL_DIR}/scripts/*)
 ---
 # Skill: Auditoria e Análise Universal de Logs
 Esta habilidade executa a varredura, parseamento, categorização e diagnóstico de logs em qualquer ecossistema de software, runtime, linguagem de programação (Python, Java, Node.js/TS, Go, Rust, C#, PHP, Ruby, C/C++), container (Docker/Kubernetes) ou serviço de infraestrutura.
@@ -22,7 +22,12 @@ O filtro `mask.sh` troca senhas, tokens, JWT, AccountKey/SAS, CPF, CNPJ, e-mail 
    - Kubernetes: `kubectl logs -n <ns> <pod> --all-containers --tail=500 --timestamps | sh ${CLAUDE_SKILL_DIR}/scripts/mask.sh`
    - Pod que reiniciou: acrescente `--previous`; veja também `kubectl describe pod -n <ns> <pod>` (seções State, Last State e Events) e `kubectl get events -n <ns> --sort-by=.lastTimestamp`
    - Systemd / Linux: `journalctl -u <serviço> --since "1 hour ago" --no-pager | sh ${CLAUDE_SKILL_DIR}/scripts/mask.sh`
-2. Para arquivos ou diretórios de log, use o coletor (já aplica o filtro, aceita nomes com espaço e agrupa erros repetidos):
+2. **Histórico de pods no AKS (Log Analytics):** `kubectl logs --previous` só mostra a execução anterior. Se o cluster envia logs ao Log Analytics, o histórico completo está na tabela `ContainerLogV2` (a tabela antiga `ContainerLog` foi aposentada em 30/09/2026). Consulte só o necessário e mascare a saída:
+   ```bash
+   az monitor log-analytics query -w <customerId> --analytics-query "ContainerLogV2 | where TimeGenerated > ago(6h) | where PodNamespace == '<ns>' and PodName startswith '<pod>' | where LogMessage has_any ('error','exception','fatal','panic') | project TimeGenerated, PodName, ContainerName, LogMessage | order by TimeGenerated asc | take 300" -o tsv | sh ${CLAUDE_SKILL_DIR}/scripts/mask.sh
+   ```
+   O `customerId` vem de `az monitor log-analytics workspace list --query "[].{Nome:name, Id:customerId}" -o table`. Se `ContainerLogV2` não tiver dados recentes, registre em "Fora do escopo" (coleta de logs do cluster parada) para o finops-azure/k8s-auditor.
+3. Para arquivos ou diretórios de log, use o coletor (já aplica o filtro, aceita nomes com espaço e agrupa erros repetidos):
    ```bash
    sh ${CLAUDE_SKILL_DIR}/scripts/log_collector.sh "<arquivo-ou-diretório>" ['*.txt']
    ```
@@ -30,7 +35,7 @@ O filtro `mask.sh` troca senhas, tokens, JWT, AccountKey/SAS, CPF, CNPJ, e-mail 
 ---
 ### Etapa 2: Análise Técnica por Categoria
 Consulte os arquivos de referência da skill para identificar assinaturas de erros específicos:
-- **Assinaturas por Linguagem/Framework:** `${CLAUDE_SKILL_DIR}/references/log_patterns.md` (Java StackTraces, Python Tracebacks, Node UnhandledRejections, Go Panics, C/C++ Segfaults, etc.).
+- **Assinaturas por Linguagem/Plataforma:** `${CLAUDE_SKILL_DIR}/references/log_patterns.md` (formatos atuais de Python, Java 17/21, Node 20+, Go, Rust, .NET 8, PHP, **códigos de saída de container** e proxies Nginx/Envoy). Assinatura de versão antiga também é achado: runtime desatualizado.
 - **Erros Silenciosos e Concorrência:** `${CLAUDE_SKILL_DIR}/references/silent_errors.md` (Memory leak, Deadlocks, Thread pool exhaustion, Timeout progressivo).
 ---
 ### Etapa 3: Síntese e Estruturação do Relatório
@@ -41,10 +46,17 @@ Cada evento crítico deve apresentar:
 - **Tipo do Erro:** Exceção, Crash, Falha de Rede, Memory Leak, Warning Silencioso.
 - **Evidência (Trecho do Log):** Trecho relevante da stack trace, já mascarado.
 - **Causa Raiz Provável:** Explicação técnica do motivo do problema.
-- **Severidade:** Crítica | Alta | Média | Baixa.
+- **Severidade:** Crítico | Alto | Médio | Baixo.
 - **Recomendação de Correção:** Solução em código, configuração ou infraestrutura.
 ---
 ## Arquivos de Referência
 - [Padrões de Logs e Linguagens](references/log_patterns.md)
 - [Erros Silenciosos e Riscos Ocultos](references/silent_errors.md)
 - [Modelo de Relatório](references/report_template.md)
+
+## Padrão de saída (comum a todos os agentes)
+Siga `${CLAUDE_SKILL_DIR}/references/report_standard.md`:
+- **Dois arquivos** com o mesmo nome-base em `reports/`: `.html` (pessoas) e `.json` (outros agentes, Colmeia, comparação).
+- **Vocabulário único:** severidade Crítico · Alto · Médio · Baixo · Info; confiança Confirmado · Potencial · Inconclusivo.
+- **`fingerprint` estável** por achado (`<categoria>|<recurso>`), sem valores que mudam a cada execução.
+- **"Desde a última auditoria":** compare com o JSON anterior do mesmo `<tipo>-<escopo>` (novos, resolvidos, persistentes, pioraram/melhoraram).

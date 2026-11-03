@@ -1,5 +1,7 @@
 # meus-agentes
 
+[![testes](https://github.com/crisz-source/agents-skills/actions/workflows/testes.yml/badge.svg)](https://github.com/crisz-source/agents-skills/actions/workflows/testes.yml)
+
 Plugin do Claude Code com agentes e skills de auditoria para **Microsoft Azure** e **Kubernetes (AKS, RKE2, kubeadm)**, usado pelo Colmeia
 (rodapé esquerdo → **Meus agentes** → escolher esta pasta).
 
@@ -38,6 +40,9 @@ meus-agentes/
 │   ├── SKILL.md                 # roteiro, allowed-tools (só leitura)
 │   ├── scripts/                 # coleta determinística, somente leitura
 │   └── references/              # critérios de análise e template do relatório
+├── schemas/                     # padrão de relatório (report_standard.md) e JSON Schema
+├── tests/                       # suíte de testes (mocks de az/kubectl), roda local e no GitHub Actions
+├── .github/workflows/           # CI: roda tests/run.sh a cada push
 ├── permissoes.json              # allow/deny aplicados pelo Colmeia a cada agente
 ├── CLAUDE.md                    # regras para a conversa principal delegar (referência; plugin não carrega)
 ├── .gitattributes               # LF nos scripts (CRLF quebra o sh)
@@ -65,7 +70,20 @@ use o log-hunter para investigar por que o pod api-xyz está reiniciando
 use o finops-maturidade para avaliar a prática FinOps do sistema SUPP
 ```
 
-Relatórios: `reports/<tipo>-<escopo>-<AAAA-MM-DD>.html`.
+### Relatórios
+Cada execução grava **dois arquivos** em `reports/` com o mesmo nome-base (`<tipo>-<escopo>-<AAAA-MM-DD>`):
+- `.html` para pessoas;
+- `.json` para máquinas: o `finops-maturidade` lê os JSON do `finops-azure` e do `azure-architect`, e o Colmeia pode montar painéis.
+
+Todos usam o mesmo vocabulário (severidade Crítico/Alto/Médio/Baixo/Info, confiança Confirmado/Potencial/Inconclusivo) e trazem a seção **"Desde a última auditoria"**: novos, resolvidos e persistentes em relação à execução anterior do mesmo escopo. Use sempre o mesmo `<escopo>` para o mesmo alvo. O padrão está em `schemas/report_standard.md` (copiado em cada skill).
+
+Validar relatórios gerados:
+```
+python3 tests/validate_report.py reports/*.json
+```
+
+### Várias subscriptions
+Os coletores Azure aceitam uma lista separada por vírgula, por exemplo `sub-prod,sub-hml`.
 
 ---
 
@@ -75,6 +93,17 @@ Relatórios: `reports/<tipo>-<escopo>-<AAAA-MM-DD>.html`.
 - `kubectl` com contexto configurado (de preferência um contexto só leitura)
 - Leitura de `docker logs` e `journalctl` para o `log-hunter`
 - Scripts rodam com `sh` (Git Bash no Windows)
+
+---
+
+## Testes
+
+```
+bash tests/run.sh        # no Windows: Git Bash
+```
+Sem acessar Azure nem cluster (`az` e `kubectl` simulados em `tests/mocks`). Verifica: sintaxe dos scripts e shellcheck, coerência agentes × skills, padrão de relatório idêntico nas skills, simulação do `permissoes.json` (o que deve ser permitido, negado ou perguntado), compilação de todas as queries JMESPath, coletores percorrendo várias subscriptions só com comandos de leitura, detecções do k8s (CrashLoop, sidecars, Ingress NGINX, aad-pod-identity) e mascaramento de segredos em IaC e logs. Para a verificação de JMESPath: `pip install jmespath`.
+
+O GitHub Actions roda a mesma suíte a cada push e pull request (`.github/workflows/testes.yml`). **Ao mudar um script ou o `permissoes.json`, rode os testes antes do push.**
 
 ---
 

@@ -27,4 +27,4 @@ Mostrar como a infraestrutura está organizada de fato, onde ela foge do padrão
 - Nunca exiba segredos de Key Vault, chaves de storage account ou connection strings.
 
 ## Entrega
-Um relatório em HTML único e autocontido, com CSS no próprio arquivo (tag `<style>`, sem dependências externas), seguindo a estrutura da skill. Salve em `reports/arch-<escopo>-<AAAA-MM-DD>.html`. Abra com um placar: total de recursos, quantos estão fora do padrão de tags, quantos são órfãos e quantos são seguros para remover.
+Dois arquivos com o mesmo nome-base em `reports/`, seguindo `report_standard.md` da skill: `arch-<escopo>-<AAAA-MM-DD>.html` (HTML único e autocontido, CSS em `<style>`, sem dependências externas, seções do template da skill) e `arch-<escopo>-<AAAA-MM-DD>.json` (achados estruturados). Use sempre o mesmo `<escopo>` para o mesmo alvo e compare com o JSON anterior na seção "Desde a última auditoria". Termine a resposta com o placar: total de recursos, fora do padrão de tags, órfãos e seguros para remover e as linhas `RELATORIO: <caminho .html>` e `DADOS: <caminho .json>`.

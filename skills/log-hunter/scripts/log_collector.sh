@@ -47,8 +47,8 @@ while IFS= read -r f; do
   printf '%s\t%s linhas\t%s\n' "$f" "$(wc -l < "$f" | tr -d ' ')" "$(date -r "$f" '+%Y-%m-%d %H:%M' 2>/dev/null)"
 done < "$LIST"
 
-ERR='(^|[^[:alnum:]_])(error|erro|exception|panic|fatal|traceback|oomkilled|out of memory|segmentation fault|failed|falha|timeout|timed out|refused|denied|unhandled|critical)([^[:alnum:]_]|$)'
-WARN='(^|[^[:alnum:]_])(warn|warning|deprecated|retry|retrying|reconnect|reconnecting|pool (is )?(full|exhausted)|exhausted|slow query|leak|throttl)'
+ERR='(^|[^[:alnum:]_])(error|erro|exception|panic|panicked|fatal|traceback|oomkilled|out of memory|heap limit|segmentation fault|failed|falha|timeout|timed out|refused|denied|unhandled|unhandledpromiserejection|critical|exit code (1|2|126|127|137|139|143)|exited with code [1-9][0-9]*|sigkill|back-off restarting)([^[:alnum:]_]|$)'
+WARN='(^|[^[:alnum:]_])(warn|warning|deprecated|retry|retrying|reconnect|reconnecting|pool (is )?(full|exhausted)|connection is not available|exhausted|slow query|leak|throttl|never retrieved|never awaited|pause full|worker timeout|max_children)'
 
 echo "
 === [2/5] Padrões de erro mais frequentes (números normalizados) ==="

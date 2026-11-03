@@ -1,11 +1,11 @@
 ---
 name: k8s-cluster-audit
-description: Skill especializada para auditoria, análise de saúde, segurança, sizing e otimização de clusters Kubernetes em modo somente-leitura.
+description: Auditoria de clusters Kubernetes (AKS, RKE2, kubeadm) por dentro, somente leitura - saúde de workloads, restarts (inclusive sidecars), segurança e RBAC, Pod Security Admission, Ingress NGINX descontinuado e Gateway API, identidade de workloads, resiliência, rede, armazenamento e sizing de requests/limits. Não cobre a camada Azure do AKS (cloud-security-audit), custo em dinheiro (azure-cost-finops) nem logs de aplicação (log-hunter).
 allowed-tools: Bash(kubectl config current-context*) Bash(kubectl config get-contexts*) Bash(kubectl version*) Bash(kubectl get *) Bash(kubectl describe *) Bash(kubectl top *) Bash(kubectl events *) Bash(kubectl auth can-i *) Bash(kubectl api-resources*) Bash(kubectl --context * get *) Bash(kubectl --context * describe *) Bash(kubectl --context * top *) Bash(sh ${CLAUDE_SKILL_DIR}/scripts/*)
 ---
 # Skill: Auditoria e Otimização de Cluster Kubernetes
 Esta habilidade executa uma auditoria completa, não destrutiva (somente leitura) de clusters Kubernetes, cobrindo saúde dos workloads, dimensionamento de CPU/memória, segurança, alta disponibilidade, redes, armazenamento e conformidade declarativa.
-O coletor (Etapa 2) cobre: nodes e pressão, pods com erro (inclusive `CrashLoopBackOff`, que fica na fase Running), restarts por container, métricas, PVC/PV, Services sem endpoint, namespaces sem Pod Security Admission, imagens com tag mutável e eventos Warning.
+O coletor (Etapa 2) cobre: nodes e pressão, pods com erro (inclusive `CrashLoopBackOff`, que fica na fase Running, e init containers), restarts por container e por sidecar nativo, métricas, PVC/PV, Services sem endpoint, namespaces sem Pod Security Admission, imagens com tag mutável, controladores de Ingress (NGINX descontinuado) e Gateway API, aad-pod-identity x Workload Identity e eventos Warning.
 
 ## Diretivas de Segurança e Princípios Operacionais
 1. **Operação 100% Somente-Leitura (Read-Only):**
@@ -40,7 +40,7 @@ Consulte os arquivos de referência especializados contidos na skill para orient
 - **Dimensionamento & Custos:** Análise segundo `${CLAUDE_SKILL_DIR}/references/sizing.md` (Requests vs Limits, CPU Throttling, Capacidade de Nodes).
 - **Segurança & RBAC:** Análise segundo `${CLAUDE_SKILL_DIR}/references/security.md` (Containers privilegiados, `runAsRoot`, permissões excessivas, exposição de portas).
 - **Resiliência e Alta Disponibilidade:** Análise segundo `${CLAUDE_SKILL_DIR}/references/resilience.md` (Probes de Liveness/Readiness/Startup, PDB, TopologySpreadConstraints, Antiafinidade).
-- **Redes & Armazenamento:** Análise segundo `${CLAUDE_SKILL_DIR}/references/network_storage.md` (Services sem Endpoints, Ingress, TLS, PVCs em `Pending`, StorageClasses).
+- **Redes, Ingress & Armazenamento:** Análise segundo `${CLAUDE_SKILL_DIR}/references/network_storage.md` (Services sem Endpoints, **migração do Ingress NGINX para Gateway API**, TLS, PVCs em `Pending`, StorageClasses).
 ---
 ### Etapa 4: Síntese e Geração do Relatório
 Estruture o relatório final seguindo rigorosamente o template em `${CLAUDE_SKILL_DIR}/references/report_template.md`.
@@ -58,3 +58,10 @@ Cada achado deve conter obrigatoriamente:
 - [Regras de Resiliência](references/resilience.md)
 - [Regras de Rede e Armazenamento](references/network_storage.md)
 - [Template de Relatório](references/report_template.md)
+
+## Padrão de saída (comum a todos os agentes)
+Siga `${CLAUDE_SKILL_DIR}/references/report_standard.md`:
+- **Dois arquivos** com o mesmo nome-base em `reports/`: `.html` (pessoas) e `.json` (outros agentes, Colmeia, comparação).
+- **Vocabulário único:** severidade Crítico · Alto · Médio · Baixo · Info; confiança Confirmado · Potencial · Inconclusivo.
+- **`fingerprint` estável** por achado (`<categoria>|<recurso>`), sem valores que mudam a cada execução.
+- **"Desde a última auditoria":** compare com o JSON anterior do mesmo `<tipo>-<escopo>` (novos, resolvidos, persistentes, pioraram/melhoraram).

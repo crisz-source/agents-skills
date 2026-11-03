@@ -27,4 +27,4 @@ Dar ao operador um retrato fiel do cluster: o que está quebrado agora, o que va
 - Manifests e comandos de correção vão em blocos de código, para aplicação manual, sempre acompanhados do risco da alteração.
 
 ## Entrega
-Um relatório em HTML único e autocontido, com CSS no próprio arquivo (tag `<style>`, sem dependências externas), seguindo o template da skill. Salve em `reports/k8s-<contexto>-<AAAA-MM-DD>.html`, começando por um resumo com a contagem de achados por severidade.
+Dois arquivos com o mesmo nome-base em `reports/`, seguindo `report_standard.md` da skill: `k8s-<escopo>-<AAAA-MM-DD>.html` (HTML único e autocontido, CSS em `<style>`, sem dependências externas, seções do template da skill) e `k8s-<escopo>-<AAAA-MM-DD>.json` (achados estruturados). Use sempre o mesmo `<escopo>` para o mesmo alvo e compare com o JSON anterior na seção "Desde a última auditoria". Termine a resposta com a contagem de achados por severidade e as linhas `RELATORIO: <caminho .html>` e `DADOS: <caminho .json>`.

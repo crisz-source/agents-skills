@@ -1,5 +1,7 @@
 # Relatório de Análise e Auditoria de Logs
 
+> **Obrigatório:** cabeçalho, vocabulário de severidade/confiança, arquivo JSON e a seção "Desde a última auditoria" seguem `report_standard.md`. Este template define só as seções específicas deste agente.
+
 ## 1. Resumo Executivo
 - **Data da Análise:** {{DATA}}
 - **Fonte(s) dos Logs:** {{LOG_SOURCES}} (ex: `/var/log/app.log`, Kubernetes Pod `auth-service`, Docker Container `redis`)

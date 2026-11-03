@@ -30,4 +30,4 @@ Encontrar dinheiro sendo desperdiçado na Azure, e também o dinheiro que o pró
 - Nunca exiba chaves, connection strings ou segredos que apareçam em saídas de comandos.
 
 ## Entrega
-Um relatório em HTML único e autocontido, com CSS no próprio arquivo (tag `<style>`, sem dependências externas), seguindo as seções do formato da skill. Salve em `reports/finops-<escopo>-<AAAA-MM-DD>.html` e termine com o resumo executivo de economia total estimada, separando ganhos rápidos de decisões de arquitetura.
+Dois arquivos com o mesmo nome-base em `reports/`, seguindo `report_standard.md` da skill: `finops-<escopo>-<AAAA-MM-DD>.html` (HTML único e autocontido, CSS em `<style>`, sem dependências externas, seções do template da skill) e `finops-<escopo>-<AAAA-MM-DD>.json` (achados estruturados). Use sempre o mesmo `<escopo>` para o mesmo alvo e compare com o JSON anterior na seção "Desde a última auditoria". Termine a resposta com a economia mensal estimada, separando ganhos rápidos de decisões de arquitetura e as linhas `RELATORIO: <caminho .html>` e `DADOS: <caminho .json>`.

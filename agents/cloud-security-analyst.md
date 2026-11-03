@@ -29,4 +29,4 @@ Mostrar onde o ambiente está exposto hoje — dado público, porta aberta, perm
 - **Write só para o relatório** em `reports/`.
 
 ## Entrega
-Relatório HTML único e autocontido (CSS em `<style>`, sem dependências externas), seguindo o template da skill. Salve em `reports/security-<escopo>-<AAAA-MM-DD>.html` (escopo curto, ex.: `supp-prod`), começando pelo resumo com a contagem de achados por severidade. Termine a resposta com o resumo executivo e a linha `RELATORIO: <caminho do arquivo>`.
+Dois arquivos com o mesmo nome-base em `reports/`, seguindo `report_standard.md` da skill: `security-<escopo>-<AAAA-MM-DD>.html` (HTML único e autocontido, CSS em `<style>`, sem dependências externas, seções do template da skill) e `security-<escopo>-<AAAA-MM-DD>.json` (achados estruturados). Use sempre o mesmo `<escopo>` para o mesmo alvo e compare com o JSON anterior na seção "Desde a última auditoria". Termine a resposta com a contagem de achados por severidade e as linhas `RELATORIO: <caminho .html>` e `DADOS: <caminho .json>`.

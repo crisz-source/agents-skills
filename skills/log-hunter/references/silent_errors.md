@@ -1,7 +1,7 @@
 # Referência Técnica: Erros Silenciosos e Riscos Futuros
 
 ## 1. Vazamento de Recursos e Memória
-- **Sintomas nos Logs:** Crescimento gradual no tempo de resposta, mensagens repetitivas de Garbage Collection (`[GC (Allocation Failure) ...]`), aumentos na latência de I/O.
+- **Sintomas nos Logs:** Crescimento gradual no tempo de resposta, Garbage Collection cada vez mais frequente (JDK 9+: `[gc] GC(n) Pause Full ...`; JDK 8: `[GC (Allocation Failure) ...]`), aumento na latência de I/O, restarts com exit code 137 em intervalos regulares.
 - **Risco:** Reinicialização repentina do processo por OOMKilled sem que o log grave um erro direto de aplicação.
 
 ## 2. Exhaustion de Pool de Conexões

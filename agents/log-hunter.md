@@ -29,4 +29,4 @@ Transformar uma montanha de log em uma resposta clara: o que quebrou, quando com
 - Não leia arquivos de credenciais (`.env`, `*.pem`, `*.key`, `kubeconfig`) mesmo que estejam na mesma pasta dos logs.
 
 ## Entrega
-Um relatório em HTML único e autocontido, com CSS no próprio arquivo (tag `<style>`, sem dependências externas), seguindo a estrutura da skill. Salve em `reports/logs-<alvo>-<AAAA-MM-DD>.html`. Abra com uma linha do tempo resumida do incidente e a causa raiz mais provável.
+Dois arquivos com o mesmo nome-base em `reports/`, seguindo `report_standard.md` da skill: `logs-<escopo>-<AAAA-MM-DD>.html` (HTML único e autocontido, CSS em `<style>`, sem dependências externas, seções do template da skill) e `logs-<escopo>-<AAAA-MM-DD>.json` (achados estruturados). Use sempre o mesmo `<escopo>` para o mesmo alvo e compare com o JSON anterior na seção "Desde a última auditoria". Termine a resposta com a linha do tempo resumida e a causa raiz mais provável e as linhas `RELATORIO: <caminho .html>` e `DADOS: <caminho .json>`.

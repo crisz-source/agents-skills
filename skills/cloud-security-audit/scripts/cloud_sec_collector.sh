@@ -1,7 +1,7 @@
 #!/bin/sh
 # cloud_sec_collector.sh — Coleta de postura de segurança Azure (SOMENTE LEITURA).
 #
-# Uso: sh cloud_sec_collector.sh <subscription-id> [diretório-de-IaC]
+# Uso: sh cloud_sec_collector.sh <subscription-id[,subscription-id...]> [diretório-de-IaC]
 #   ENTRA=1  -> inclui checagens de Entra ID via Microsoft Graph (MFA de admins,
 #               Conditional Access, apps com segredo vencido). Exigem permissões de
 #               leitura no diretório; sem elas, ficam "Inconclusivo".
@@ -12,13 +12,13 @@
 #     appsettings, connection-string, secret show, publishing-profiles).
 #   - Valores parecidos com segredo encontrados em IaC são mascarados (4 caracteres + ***).
 
-SUB="$1"
+SUBS="$1"
 IAC_DIR="${2:-.}"
 LIMIT="${SEC_LIMIT:-30}"
 set -f
 
-if [ -z "$SUB" ]; then
-  echo "Uso: sh $0 <subscription-id> [diretório-de-IaC]" >&2
+if [ -z "$SUBS" ]; then
+  echo "Uso: sh $0 <subscription-id[,subscription-id...]> [diretório-de-IaC]" >&2
   exit 2
 fi
 command -v az >/dev/null 2>&1 || { echo "ERRO: Azure CLI (az) não encontrada." >&2; exit 1; }
@@ -27,7 +27,6 @@ az account show -o none 2>/dev/null || { echo "ERRO: Azure CLI não autenticada.
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 AZ="az"
-S="--subscription $SUB"
 
 # run <título> <comando...>: mostra a saída (limitada) ou registra Inconclusivo.
 run() {
@@ -56,6 +55,9 @@ mask() {
 
 echo "=== Cloud Security Collector — Azure (somente leitura) ==="
 echo "Data: $(date +%Y-%m-%d)"
+coletar() {
+  SUB="$1"
+  S="--subscription $SUB"
 run "Contexto" $AZ account show $S --query "{Subscription:name, Id:id, Tenant:tenantId, Usuario:user.type}" -o table
 
 # ---------------------------------------------------------------- 1. Defender
@@ -133,7 +135,9 @@ done
 echo ""
 echo "=== [8/10] AKS — camada Azure (o interior do cluster é do k8s-auditor) ==="
 run "Clusters" \
-  $AZ aks list $S --query "[].{Nome:name, RG:resourceGroup, Versao:kubernetesVersion, EntraID:aadProfile.managed, RBACdoAzure:aadProfile.enableAzureRbac, ContasLocaisDesligadas:disableLocalAccounts, Privado:apiServerAccessProfile.enablePrivateCluster, IPsAutorizados:length(apiServerAccessProfile.authorizedIpRanges || \`[]\`), NetworkPolicy:networkProfile.networkPolicy, Defender:securityProfile.defender.securityMonitoring.enabled}" -o table
+  $AZ aks list $S --query "[].{Nome:name, RG:resourceGroup, Versao:kubernetesVersion, EntraID:aadProfile.managed, RBACdoAzure:aadProfile.enableAzureRbac, ContasLocaisDesligadas:disableLocalAccounts, Privado:apiServerAccessProfile.enablePrivateCluster, IPsAutorizados:length(apiServerAccessProfile.authorizedIpRanges || \`[]\`), NetworkPlugin:networkProfile.networkPlugin, NetworkPolicy:networkProfile.networkPolicy, Defender:securityProfile.defender.securityMonitoring.enabled}" -o table
+run "Node pools: sistema operacional e versão (Azure Linux 2.0 = osSku AzureLinux em K8s < 1.32; imagens removidas em 31/03/2026)" \
+  $AZ aks list $S --query "[].{Cluster:name, Pools:join(' | ', agentPoolProfiles[].join('/', [name, osSku || osType || '?', orchestratorVersion || currentOrchestratorVersion || '?']))}" -o table
 
 # ---------------------------------------------------------------- 9. RBAC
 echo ""
@@ -143,9 +147,18 @@ run "Owner / Contributor / User Access Administrator / RBAC Administrator" \
 run "Atribuições a principais excluídos (órfãs)" \
   $AZ role assignment list $S --all --include-inherited --query "length([?principalType=='Unknown' || principalName==''])" -o tsv
 
+}
+
+for SUB in $(echo "$SUBS" | tr ',' ' '); do
+  echo ""
+  echo "################################################################"
+  echo "### Subscription: $SUB"
+  echo "################################################################"
+  coletar "$SUB"
+done
 # ---------------------------------------------------------------- 10. Entra ID (opcional)
 echo ""
-echo "=== [10/10] Entra ID (ENTRA=${ENTRA:-0}) ==="
+echo "=== [10/10] Entra ID — tenant (ENTRA=${ENTRA:-0}) ==="
 if [ "${ENTRA:-0}" = "1" ]; then
   G="https://graph.microsoft.com/v1.0"
   run "Administradores SEM MFA registrado (contagem)" \
@@ -161,7 +174,7 @@ if [ "${ENTRA:-0}" = "1" ]; then
   run "App registrations com segredo vencendo em 30 dias" \
     $AZ ad app list --all --query "[?passwordCredentials[?endDateTime >= '$HOJE' && endDateTime < '$EM30']].{App:displayName, AppId:appId}" -o table
 else
-  echo "Pulado. Para incluir: ENTRA=1 sh $0 $SUB $IAC_DIR"
+  echo "Pulado. Para incluir: ENTRA=1 sh $0 $SUBS $IAC_DIR"
 fi
 
 # ---------------------------------------------------------------- 11. IaC e segredos

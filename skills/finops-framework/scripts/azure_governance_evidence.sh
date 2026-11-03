@@ -1,15 +1,15 @@
 #!/bin/sh
 # azure_governance_evidence.sh — Evidências de governança FinOps na Azure (SOMENTE LEITURA).
-# Uso: sh azure_governance_evidence.sh <subscription-id> [tags,obrigatórias]
+# Uso: sh azure_governance_evidence.sh <subscription-id[,subscription-id...]> [tags,obrigatórias]
 #   Tags padrão: Environment,Owner,CostCenter,Application (igual ao azure-architect; sem diferenciar maiúsculas).
 # Usa apenas verbos de leitura: show, list, query e GET via 'az rest'.
 # Não coleta desperdício (isso é a skill azure-cost-finops).
 
-SUB="$1"
+SUBS="$1"
 TAGS="${2:-Environment,Owner,CostCenter,Application}"
 
-if [ -z "$SUB" ]; then
-  echo "Uso: sh $0 <subscription-id> [tags,obrigatórias]" >&2
+if [ -z "$SUBS" ]; then
+  echo "Uso: sh $0 <subscription-id[,subscription-id...]> [tags,obrigatórias]" >&2
   exit 1
 fi
 
@@ -23,7 +23,6 @@ if ! az account show -o none 2>/dev/null; then
   exit 1
 fi
 
-SCOPE="/subscriptions/$SUB"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
@@ -41,8 +40,11 @@ run() {
 
 echo "=== Evidências de governança FinOps — Azure (somente leitura) ==="
 echo "Data: $(date +%Y-%m-%d)"
+coletar() {
+  SUB="$1"
+  SCOPE="/subscriptions/$SUB"
 az account show --subscription "$SUB" --query "{Subscription:name, Id:id, Tenant:tenantId}" -o table 2>/dev/null \
-  || { echo "ERRO: sem acesso à subscription $SUB."; exit 1; }
+  || { echo "ERRO: sem acesso à subscription $SUB."; return 0; }
 
 # ---------- 1.2 Allocation: cobertura de tags ----------
 echo ""
@@ -122,4 +124,13 @@ run "Quantidade de recomendações de custo" \
   az advisor recommendation list --subscription "$SUB" --category Cost --query "length(@)" -o tsv
 
 echo ""
+}
+
+for SUB in $(echo "$SUBS" | tr ',' ' '); do
+  echo ""
+  echo "################################################################"
+  echo "### Subscription: $SUB"
+  echo "################################################################"
+  coletar "$SUB"
+done
 echo "=== Coleta concluída. Itens 'Não avaliado' devem aparecer na seção Limitações do relatório. ==="

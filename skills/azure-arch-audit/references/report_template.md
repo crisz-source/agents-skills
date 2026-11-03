@@ -1,5 +1,7 @@
 # Relatório de Auditoria de Arquitetura Azure
 
+> **Obrigatório:** cabeçalho, vocabulário de severidade/confiança, arquivo JSON e a seção "Desde a última auditoria" seguem `report_standard.md`. Este template define só as seções específicas deste agente.
+
 ## Placar
 - **Data da Auditoria:** {{DATA}}
 - **Subscription (nome / id):** {{SUBSCRIPTION_INFO}}
